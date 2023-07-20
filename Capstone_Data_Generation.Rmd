@@ -1,0 +1,35 @@
+---
+title: "Capstone Data Generation"
+output: html_document
+---
+
+
+```{r}
+URL <- "https://raw.githubusercontent.com/Fryer6/NFL-TEAM-DATA-5/main/NFL%20Capstone%20Team%204%20CSV.csv"
+NFL <- read.csv(URL)
+NFL
+```
+
+```{r}
+points <- lm((PTS)~((poly(THRW.YDS, 2))+log(TTL.YDS)+RUSH.YDS)*factor(PLYOFF),data=NFL)
+#summary(points)
+plot(points,1)
+plot(points,2)
+plot(points,3)
+print(points)
+coef(points)
+```
+```{r}
+y <- predict(points)
+y2<- y/17
+#Divided by 17 since there are 17 games in a season
+```
+
+
+
+```{r}
+# Response Vector
+response<-cbind(y2)
+print(response)
+```
+

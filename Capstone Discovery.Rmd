@@ -1,0 +1,178 @@
+---
+
+title: "Detecting the Model"
+
+output: html_document
+
+---
+ 
+
+```{r}
+
+URL <- "https://raw.githubusercontent.com/Fryer6/NFL-TEAM-DATA-5/main/NFL%20Capstone%20Team%204%20CSV.csv"
+
+NFL <- read.csv(URL)
+
+NFL
+
+```
+
+ 
+
+```{r}
+
+#Finding Categorial Predictor for PLayoff
+
+ 
+
+library(ggplot2); theme_set(theme_bw())
+
+ggplot(NFL)+aes(x=THRW.YDS+RUSH.YDS+YDS.Play, y=log(PTS), colour=factor(PLYOFF))+geom_point()+geom_smooth(method='lm', se=FALSE, formula='y~x')
+
+cor(NFL$PTS, NFL$THRW.YDS, method = "pearson")
+
+ 
+
+#Therefore it can be seen that teams that make the playoffs score more points during the regular season and should be used as a categorical predictor
+
+```
+
+
+```{r}
+
+#Polynomial Fit For throwing yards
+
+plot((PTS) ~ THRW.YDS, data = NFL)
+
+disp_seq <- seq(min(NFL$THRW.YDS), max(NFL$THRW.YDS), 0.1)
+
+poly_seq <- lm((PTS) ~ poly(THRW.YDS, 2), data = NFL) |>
+
+    predict(newdata = list(THRW.YDS = disp_seq))
+
+lines(disp_seq, poly_seq)
+
+ 
+
+#Therefore you can see the polynomial of throwing yards fits the data more accurately based on the data
+
+```
+
+ 
+
+```{r}
+
+points <- lm(PTS~((poly(THRW.YDS, 2))+log(TTL.YDS)+RUSH.YDS)*factor(PLYOFF),data=NFL)
+
+summary(points)
+
+plot(points,1)
+
+plot(points,2)
+
+plot(points,3)
+
+print(points)
+
+ 
+
+```
+
+ 
+```{r}
+
+points_1 <- lm(PTS~((poly(THRW.YDS, 2))+TTL.YDS+RUSH.YDS)*factor(PLYOFF),data=NFL)
+
+summary(points_1)
+
+plot(points_1,1)
+
+plot(points_1,2)
+
+plot(points_1,3)
+
+print(points_1)
+
+```
+
+```{r}
+
+#IT can be seen that logging the TTL.YDs predictor makes Residuals vs Fitted better, QQ plot is similar and the Scale-Location plot is also better. Therefore logging the predictor makes the model more accurate
+
+ 
+
+#Furthermore, an analysis of transforming the response lognormally brought issues with the model, as the response vector analyzed afterwards was retrieved with low accuracy. ie. Accuracy of model was  hurt significantly with a lognormal transformation.
+
+ 
+
+```
+
+ 
+
+```{r}
+
+cor(NFL$THRW.YDS,NFL$RUSH.YDS,method = "pearson")
+
+cor(NFL$THRW.YDS,NFL$TTL.YDS,method = "pearson")
+
+cor(NFL$TTL.YDS,NFL$RUSH.YDS,method = "pearson")
+
+ 
+
+#It can be seen that throw yards and rush yards are highly correlated, but due to the nature of football and both being utilized by NFL teams to
+
+#score points, there will never be a situation where either predictor maintains a coefficient (beta) of 0 in a model with relation to pointsas the response.
+
+ 
+
+```
+
+ 
+
+```{r}
+
+points <- lm((PTS)~((poly(THRW.YDS, 2))+log(TTL.YDS)+RUSH.YDS)*factor(PLYOFF),data=NFL)
+
+ 
+
+y <- predict(points)
+
+y2<- y/17
+
+ 
+
+# Response Vector
+
+response<-cbind(y2)
+
+plot(response)
+
+ 
+
+#Since the plot of the model retrieves a linear trend, the variance is stable in our model
+
+```
+
+```{r}
+
+#Through Analyzing the correlation within the errors, it was seen that such was non-existent within our generated model
+
+ 
+
+```
+
+ 
+
+```{r}
+
+stand_residuals <- rstandard(points)
+
+outlier_observations <- stand_residuals[abs(stand_residuals)>3]
+
+outlier_observations
+
+ 
+
+#No outliers within our model, therefore there is no way outliers can exist within multiple dimensions within our model.
+
+```
